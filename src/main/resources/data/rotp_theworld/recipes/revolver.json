@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "n  ",
+    "fii",
+    "in "
+  ],
+  "key": {
+    "n": {
+      "tag": "forge:nuggets/iron"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
+    },
+    "f": {
+      "item": "minecraft:flint_and_steel"
+    }
+  },
+  "result": {
+    "item": "rotp_theworld:revolver"
+  }
+}
