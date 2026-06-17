@@ -1,0 +1,16 @@
+{
+  "skins": {
+    "rotp_theworld:skinA": {
+      "stand_type": "rotp_theworld:the_world",
+      "color" : "#6bc8ff"
+    },
+    "rotp_theworld:skinB": {
+      "stand_type": "rotp_theworld:the_world",
+      "color" : "#a7d032"
+    },
+    "rotp_theworld:skinC": {
+      "stand_type": "rotp_theworld:the_world",
+      "color" : "#b3b3b3"
+    }
+  }
+}
