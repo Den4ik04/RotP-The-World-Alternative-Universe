@@ -11,8 +11,10 @@ import com.github.standobyte.jojo.entity.stand.StandPose;
 import com.github.standobyte.jojo.power.impl.stand.IStandPower;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
@@ -52,12 +54,20 @@ public class THEWORLDKnifeBarrage extends StandEntityAction {
         if (ticksLeft % 2 == 0) {
             standEntity.setStandPose(StandPose.BARRAGE);
             if (!world.isClientSide) {
+                LivingEntity user = userPower.getUser();
                 KnifeEntity knife = new KnifeEntity(world, standEntity);
-                double spreadX = (world.random.nextDouble() - 0.5) * 0.2;
-                double spreadY = (world.random.nextDouble() - 0.5) * 0.15;
-                double spreadZ = (world.random.nextDouble() - 0.5) * 0.2;
-                knife.shoot(standEntity.getLookAngle().x + spreadX, standEntity.getLookAngle().y + spreadY, standEntity.getLookAngle().z + spreadZ, 1.6F, 1.0F);
+
+                Vector3d eyePos = user.getEyePosition(1.0F);
+                Vector3d lookDir = user.getLookAngle();
+                Vector3d targetPos = eyePos.add(lookDir.scale(30.0D));
+
+                Vector3d shootVec = targetPos.subtract(knife.getX(), knife.getEyeY(), knife.getZ()).normalize();
+
+                knife.shoot(shootVec.x, shootVec.y, shootVec.z, 1.6F, 0.2F);
                 knife.setBaseDamage(3.75F);
+
+                knife.pickup = AbstractArrowEntity.PickupStatus.ALLOWED;
+
                 world.addFreshEntity(knife);
                 world.playSound(null, standEntity.getX(), standEntity.getY(), standEntity.getZ(),
                         InitSounds.THE_WORLD_KNIVES_THROW.get(), SoundCategory.PLAYERS, 0.5F, 1.0F);
