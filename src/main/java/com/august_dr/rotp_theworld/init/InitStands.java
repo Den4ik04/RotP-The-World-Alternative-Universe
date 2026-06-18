@@ -107,7 +107,7 @@ public class InitStands {
                     .standWindupDuration(5).standPerformDuration(32).standRecoveryTicks(5)
                     .staminaCost(100).cooldown(800)
                     .resolveLevelToUnlock(2)
-                    .standOffsetFromUser(0.75, 0.75, 0.2)
+                    .standOffsetFromUser(0.0, 1.2, 0.0)
                     .standPose(StandPose.BARRAGE)
                     .partsRequired(StandPart.ARMS)));
 
