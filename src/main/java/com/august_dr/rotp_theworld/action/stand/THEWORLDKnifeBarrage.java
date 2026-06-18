@@ -18,6 +18,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
+
 public class THEWORLDKnifeBarrage extends StandEntityAction {
 
     public THEWORLDKnifeBarrage(StandEntityAction.Builder builder) {
@@ -35,8 +36,16 @@ public class THEWORLDKnifeBarrage extends StandEntityAction {
     }
 
     @Override
+    public boolean noAdheringToUserOffset(IStandPower standPower, StandEntity standEntity) {
+        return false;
+    }
+
+    @Override
     public void standPerform(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
         super.standPerform(world, standEntity, userPower, task);
+
+        standEntity.setStandPose(StandPose.BARRAGE);
+
         if (!world.isClientSide) {
             LivingEntity user = userPower.getUser();
             if (user instanceof PlayerEntity) {
@@ -48,30 +57,70 @@ public class THEWORLDKnifeBarrage extends StandEntityAction {
     }
 
     @Override
+    public void standTickWindup(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
+        super.standTickWindup(world, standEntity, userPower, task);
+        standEntity.setStandPose(StandPose.BARRAGE);
+        fixStandRotation(standEntity, userPower.getUser());
+    }
+
+    @Override
     public void standTickPerform(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
         super.standTickPerform(world, standEntity, userPower, task);
+
+        standEntity.setStandPose(StandPose.BARRAGE);
+        LivingEntity user = userPower.getUser();
+        fixStandRotation(standEntity, user);
+
         int ticksLeft = task.getTicksLeft();
         if (ticksLeft % 2 == 0) {
-            standEntity.setStandPose(StandPose.BARRAGE);
             if (!world.isClientSide) {
-                LivingEntity user = userPower.getUser();
                 KnifeEntity knife = new KnifeEntity(world, standEntity);
 
-                Vector3d eyePos = user.getEyePosition(1.0F);
-                Vector3d lookDir = user.getLookAngle();
-                Vector3d targetPos = eyePos.add(lookDir.scale(30.0D));
+                LivingEntity aimingEntity = standEntity.isManuallyControlled() ? standEntity : user;
+                Vector3d eyePos = aimingEntity.getEyePosition(1.0F);
+                Vector3d lookDir = aimingEntity.getLookAngle();
+                Vector3d targetPos = eyePos.add(lookDir.scale(60.0D));
 
-                Vector3d shootVec = targetPos.subtract(knife.getX(), knife.getEyeY(), knife.getZ()).normalize();
+                double spawnY = knife.getEyeY() - 0.4D;
+                knife.setPos(knife.getX(), spawnY, knife.getZ());
 
-                knife.shoot(shootVec.x, shootVec.y, shootVec.z, 1.6F, 0.2F);
+                Vector3d shootVec = targetPos.subtract(knife.getX(), spawnY, knife.getZ()).normalize();
+
+                float velocity = 2.50F;
+                float inaccuracy = 4.50F;
+                knife.shoot(shootVec.x, shootVec.y, shootVec.z, velocity, inaccuracy);
+
                 knife.setBaseDamage(3.75F);
-
                 knife.pickup = AbstractArrowEntity.PickupStatus.ALLOWED;
 
                 world.addFreshEntity(knife);
                 world.playSound(null, standEntity.getX(), standEntity.getY(), standEntity.getZ(),
                         InitSounds.THE_WORLD_KNIVES_THROW.get(), SoundCategory.PLAYERS, 0.5F, 1.0F);
             }
+        }
+    }
+
+    @Override
+    public void standTickRecovery(World world, StandEntity standEntity, IStandPower userPower, StandEntityTask task) {
+        super.standTickRecovery(world, standEntity, userPower, task);
+    }
+
+    private void fixStandRotation(StandEntity standEntity, LivingEntity user) {
+        if (standEntity.isManuallyControlled()) {
+            return;
+        }
+        if (user != null) {
+            float yaw = user.yRot;
+            float pitch = user.xRot;
+
+            standEntity.yRot = yaw;
+            standEntity.yRotO = yaw;
+            standEntity.yBodyRot = yaw;
+            standEntity.yBodyRotO = yaw;
+            standEntity.yHeadRot = yaw;
+            standEntity.yHeadRotO = yaw;
+            standEntity.xRot = pitch;
+            standEntity.xRotO = pitch;
         }
     }
 
